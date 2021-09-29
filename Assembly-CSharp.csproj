@@ -52,32 +52,43 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
-     <Compile Include="Assets\GalaxyBox1\examplescene.cs" />
+     <Compile Include="Assets\Packages\GalaxyBox1\examplescene.cs" />
      <Compile Include="Assets\Script\UiHandler.cs" />
      <Compile Include="Assets\Script\SpaceShipHandler.cs" />
      <Compile Include="Assets\Script\MapCreator.cs" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
-     <None Include="Assets\GalaxyBox1\instructions.txt" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
-     <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
-     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
-     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
-     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
-     <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
+     <Compile Include="Assets\Packages\Particle Ribbon by Moonflower Carnivore\Scripts\ReverseNormals.cs" />
+     <Compile Include="Assets\Packages\Particle Ribbon by Moonflower Carnivore\Scripts\randomParticleRotation.cs" />
+     <Compile Include="Assets\Packages\Particle Ribbon by Moonflower Carnivore\Scripts\rotation.cs" />
+     <Compile Include="Assets\Packages\Fx Explosion Pack\Script\DestroyEffect.cs" />
+     <Compile Include="Assets\Packages\Fx Explosion Pack\Script\csLightControl.cs" />
+     <Compile Include="Assets\Packages\Fx Explosion Pack\Script\csMouseOrbit.cs" />
+     <Compile Include="Assets\Packages\Fx Explosion Pack\Script\csDemoScenceControl.cs" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMPro.cginc" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
+     <None Include="Assets\Packages\Particle Ribbon by Moonflower Carnivore\readme_Simple_Particle_Ribbon.txt" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
+     <None Include="Assets\Packages\BOXOPHOBIC\Skybox Cubemap Extended\Core\Shaders\Skybox Cubemap Extended.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
+     <None Include="Assets\Packages\Particle Ribbon by Moonflower Carnivore\Shaders\Particle Alpha Blend HDR.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
+     <None Include="Assets\Packages\GalaxyBox1\instructions.txt" />
+     <None Include="Assets\Packages\BOXOPHOBIC\Skybox Cubemap Extended\Core\Shaders\Skybox Cubemap Blend.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
+     <None Include="Assets\Packages\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
+     <None Include="Assets\Packages\TextMesh Pro\Shaders\TMP_Sprite.shader" />
  <Reference Include="UnityEngine">
  <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
  </Reference>
@@ -665,6 +676,18 @@
  </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Boxophobic.Utils.Scripts.csproj">
+      <Project>{573c9f2e-52c8-7b42-2cf1-c5fd2629408a}</Project>
+      <Name>Boxophobic.Utils.Scripts</Name>
+    </ProjectReference>
+    <ProjectReference Include="Boxophobic.Utils.Editor.csproj">
+      <Project>{970a260e-8156-481c-0616-4b315d149c04}</Project>
+      <Name>Boxophobic.Utils.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="Boxophobic.SkyboxCubemapExtended.Editor.csproj">
+      <Project>{07ca0991-bff5-242c-fe01-4b3f8e8e7769}</Project>
+      <Name>Boxophobic.SkyboxCubemapExtended.Editor</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

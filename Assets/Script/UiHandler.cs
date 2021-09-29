@@ -1,6 +1,7 @@
+using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UiHandler : MonoBehaviour
@@ -9,9 +10,12 @@ public class UiHandler : MonoBehaviour
     [SerializeField] private MapCreator _mapCreator;
     public Button StartGameBtn, LaboratoryBtn, SettingsBtn, MaxFuelBtns, StarterFuelBtn, NitroBtn;
     public GameObject TopBtns, MidleBtns, BottomBtns, CloseBarPanel;
-    public bool IsBarShowed = false;
+    public GameObject Warning;
+    public bool IsBarShowed = false, IsGameStarted = false;
     private int nitroLvl, maxFuellvl, StarterFuelLvl;
-    
+    private Vector3 StartPosition;
+    public Coroutine startRecord;
+
     void Start()
     {
         MidleBtns.GetComponent<Animator>().SetTrigger("BackToMenu");
@@ -21,50 +25,58 @@ public class UiHandler : MonoBehaviour
 
         if (!PlayerPrefs.HasKey("nitro"))
             PlayerPrefs.SetInt("nitro", 1);
-        
-        nitroLvl = PlayerPrefs.GetInt("nitro"); 
+
+        nitroLvl = PlayerPrefs.GetInt("nitro");
         NitroBtn.gameObject.transform.GetChild(0).GetComponent<TMP_Text>().text = nitroLvl.ToString();
-        NitroBtn.gameObject.transform.GetChild(1).GetComponent<TMP_Text>().text = (nitroLvl * 20).ToString();
-        
+        NitroBtn.gameObject.transform.GetChild(1).GetComponent<TMP_Text>().text = (nitroLvl * 50).ToString();
+
 
         if (!PlayerPrefs.HasKey("maxFuel"))
             PlayerPrefs.SetInt("maxFuel", 1);
-        
+
         maxFuellvl = PlayerPrefs.GetInt("maxFuel");
         MaxFuelBtns.gameObject.transform.GetChild(0).GetComponent<TMP_Text>().text = maxFuellvl.ToString();
         MaxFuelBtns.gameObject.transform.GetChild(1).GetComponent<TMP_Text>().text = (maxFuellvl * 20).ToString();
-        
+
 
         if (!PlayerPrefs.HasKey("starterFuel"))
             PlayerPrefs.SetInt("starterFuel", 1);
-        
+
         StarterFuelLvl = PlayerPrefs.GetInt("starterFuel");
         StarterFuelBtn.gameObject.transform.GetChild(0).GetComponent<TMP_Text>().text = StarterFuelLvl.ToString();
-        StarterFuelBtn.gameObject.transform.GetChild(1).GetComponent<TMP_Text>().text = (StarterFuelLvl * 20).ToString();
-        
-        if(!PlayerPrefs.HasKey("coin"))
-            PlayerPrefs.SetInt("coin",10);
+        StarterFuelBtn.gameObject.transform.GetChild(1).GetComponent<TMP_Text>().text =
+            (StarterFuelLvl * 20).ToString();
+
+        if (!PlayerPrefs.HasKey("Coin"))
+            PlayerPrefs.SetInt("Coin", 10);
         BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
             PlayerPrefs.GetInt("Coin").ToString();
-        
-        if(!PlayerPrefs.HasKey("Record"))
-            PlayerPrefs.SetInt("Record",0);
+
+        if (!PlayerPrefs.HasKey("Record"))
+            PlayerPrefs.SetFloat("Record", 0);
         BottomBtns.transform.Find("Record").GetChild(0).GetComponent<TMP_Text>().text =
-            PlayerPrefs.GetInt("Record").ToString();
+            PlayerPrefs.GetFloat("Record").ToString();
 
         #endregion
         
         StartGameBtn.onClick.AddListener(() =>
         {
-            if (!IsBarShowed)
+            if (!IsBarShowed && !IsGameStarted)
             {
+                IsGameStarted = true;
                 MidleBtns.GetComponent<Animator>().SetTrigger("StartGame");
                 BottomBtns.GetComponent<Animator>().SetTrigger("HideBottomBtns");
                 TopBtns.GetComponent<Animator>().SetTrigger("ShowTopBtns");
+                _mapCreator.SpaceShip.transform.Find("MainCamera").GetComponent<Animator>().SetTrigger("GameCamera");
                 _mapCreator.StartGame();
+                
+                //taEn kardan Position Start bazi
+                Vector3 tmpVector = _mapCreator.SpaceShip.transform.position;
+                StartPosition = new Vector3(tmpVector.x, tmpVector.y, tmpVector.z + 12.34f);
+                startRecord = StartCoroutine(StartRecord());
             }
         });
-        
+
         LaboratoryBtn.onClick.AddListener(() =>
         {
             if (!IsBarShowed)
@@ -73,9 +85,18 @@ public class UiHandler : MonoBehaviour
                 MidleBtns.GetComponent<Animator>().SetTrigger("ShowMenuBar");
                 IsBarShowed = true;
                 MidleBtns.transform.Find("Bar").Find("Laboratory").gameObject.SetActive(true);
+                
+                var content = MidleBtns.transform.Find("Bar").Find("Laboratory").Find("SpaceshipModels").Find("Scroll")
+                    .Find("Conten");
+                content.localPosition = new Vector3(549, content.position.z, content.position.z);
+                content = MidleBtns.transform.Find("Bar").Find("Laboratory").Find("SpaceshipColer").Find("Scroll")
+                    .Find("Conten");
+                content.localPosition = new Vector3(599, content.position.z, content.position.z);
+                
+                _mapCreator.SpaceShip.transform.Find("MainCamera").GetComponent<Animator>().SetTrigger("CameraOnBar");
             }
         });
-        
+
         SettingsBtn.onClick.AddListener(() =>
         {
             if (!IsBarShowed)
@@ -84,25 +105,10 @@ public class UiHandler : MonoBehaviour
                 MidleBtns.GetComponent<Animator>().SetTrigger("ShowMenuBar");
                 IsBarShowed = true;
                 MidleBtns.transform.Find("Bar").Find("Settings").gameObject.SetActive(true);
+                _mapCreator.SpaceShip.transform.Find("MainCamera").GetComponent<Animator>().SetTrigger("CameraOnBar");
             }
         });
-        
-        MaxFuelBtns.onClick.AddListener(() =>
-        {
-            int coin = int.Parse(BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text);
-            if (coin >= maxFuellvl * 20)
-            {
-                int RemindCoin = coin - maxFuellvl * 20;
-                BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
-                    RemindCoin.ToString();
-                PlayerPrefs.SetInt("Coin",RemindCoin);
-                PlayerPrefs.SetInt("maxFuel", ++maxFuellvl);
-                MaxFuelBtns.gameObject.transform.GetChild(0).GetComponent<TMP_Text>().text = maxFuellvl.ToString();
-                MaxFuelBtns.gameObject.transform.GetChild(1).GetComponent<TMP_Text>().text =
-                    (maxFuellvl * 20).ToString();
-            }
-        }); 
-        
+
         StarterFuelBtn.onClick.AddListener(() =>
         {
             int coin = int.Parse(BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text);
@@ -111,29 +117,48 @@ public class UiHandler : MonoBehaviour
                 int RemindCoin = coin - StarterFuelLvl * 20;
                 BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
                     RemindCoin.ToString();
-                PlayerPrefs.SetInt("Coin",RemindCoin);
+                PlayerPrefs.SetInt("Coin", RemindCoin);
                 PlayerPrefs.SetInt("starterFuel", ++StarterFuelLvl);
                 StarterFuelBtn.gameObject.transform.GetChild(0).GetComponent<TMP_Text>().text =
                     StarterFuelLvl.ToString();
                 StarterFuelBtn.gameObject.transform.GetChild(1).GetComponent<TMP_Text>().text =
                     (StarterFuelLvl * 20).ToString();
             }
-        }); 
-        
+            else ShowWarning("Coin");
+        });
+
+        MaxFuelBtns.onClick.AddListener(() =>
+        {
+            int coin = int.Parse(BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text);
+            if (coin >= maxFuellvl * 20)
+            {
+                int RemindCoin = coin - maxFuellvl * 20;
+                BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
+                    RemindCoin.ToString();
+                PlayerPrefs.SetInt("Coin", RemindCoin);
+                PlayerPrefs.SetInt("maxFuel", ++maxFuellvl);
+                MaxFuelBtns.gameObject.transform.GetChild(0).GetComponent<TMP_Text>().text = maxFuellvl.ToString();
+                MaxFuelBtns.gameObject.transform.GetChild(1).GetComponent<TMP_Text>().text =
+                    (maxFuellvl * 20).ToString();
+            }
+            else ShowWarning("Coin");
+        });
+
         NitroBtn.onClick.AddListener(() =>
         {
             int coin = int.Parse(BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text);
-            if (coin >= nitroLvl * 20)
+            if (coin >= nitroLvl * 50)
             {
-                int RemindCoin = coin - nitroLvl * 20;
+                int RemindCoin = coin - nitroLvl * 50;
                 BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
                     RemindCoin.ToString();
-                PlayerPrefs.SetInt("Coin",RemindCoin);
+                PlayerPrefs.SetInt("Coin", RemindCoin);
                 PlayerPrefs.SetInt("nitro", ++nitroLvl);
                 NitroBtn.gameObject.transform.GetChild(0).GetComponent<TMP_Text>().text = nitroLvl.ToString();
-                NitroBtn.gameObject.transform.GetChild(1).GetComponent<TMP_Text>().text = (nitroLvl * 20).ToString();
+                NitroBtn.gameObject.transform.GetChild(1).GetComponent<TMP_Text>().text = (nitroLvl * 50).ToString();
             }
-        }); 
+            else ShowWarning("Coin");
+        });
     }
 
     public void CloseBar()
@@ -143,5 +168,38 @@ public class UiHandler : MonoBehaviour
         CloseBarPanel.SetActive(false);
         MidleBtns.transform.Find("Bar").Find("Laboratory").gameObject.SetActive(false);
         MidleBtns.transform.Find("Bar").Find("Settings").gameObject.SetActive(false);
+        _mapCreator.SpaceShip.transform.Find("MainCamera").GetComponent<Animator>().SetTrigger("CameraOffBar");
+    }
+
+    void ShowWarning(string name)
+    {
+        Animator anim = Warning.GetComponent<Animator>();
+        if (anim.GetCurrentAnimatorStateInfo(0).IsName("Wait"))
+        {
+            switch (name)
+            {
+                case "Coin":
+                    anim.SetTrigger("Coin");
+                    break;
+            }
+        }
+    }
+    
+    IEnumerator StartRecord()
+    {
+        float record;
+        while (Vector3.Distance(StartPosition,_mapCreator.SpaceShip.transform.position)>.1f)
+        {
+            yield return new WaitForEndOfFrame();
+        }
+        IsGameStarted = false;
+        while (true)
+        {
+            record = (_mapCreator.SpaceShip.transform.position.z - 12);
+            record = (float)Math.Round(record, 2);
+            TopBtns.transform.Find("RecordTxt").GetComponent<TMP_Text>().text =
+                record.ToString();
+            yield return new WaitForSeconds(.1f);
+        }
     }
 }

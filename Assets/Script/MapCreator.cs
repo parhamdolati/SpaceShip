@@ -10,7 +10,7 @@ public class MapCreator : MonoBehaviour
     public GameObject[] MapsType;
     public GameObject SpaceShip;
     private Vector3 NextSpawnPoint;
-    private List<GameObject> MapsPart = new List<GameObject>();
+    public List<GameObject> MapsPart = new List<GameObject>();
     private Random _random = new Random();
     private int MapsPartInMap = 6;
 
@@ -20,10 +20,9 @@ public class MapCreator : MonoBehaviour
         NextSpawnPoint = new Vector3(tmpVector.x, tmpVector.y, tmpVector.z + 20);
         CreatMap();
         CreatMap();
-        StartCoroutine(_spaceShipHandler.StartSpaceShipControl());//start control safine
+        _spaceShipHandler.SpaceShipControl();//start control safine
         StartCoroutine(MapCheker());//start chek kardan masir
     }
-    
     
     IEnumerator MapCheker() //chek kardan fasele baraye ejad masir
     {
