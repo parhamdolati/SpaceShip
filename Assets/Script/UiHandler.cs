@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,11 +11,15 @@ public class UiHandler : MonoBehaviour
     [SerializeField] private MapCreator _mapCreator;
     public Button StartGameBtn, LaboratoryBtn, SettingsBtn, MaxFuelBtns, StarterFuelBtn, NitroBtn;
     public GameObject TopBtns, MidleBtns, BottomBtns, CloseBarPanel;
-    public GameObject Warning;
+    public GameObject Warning,Spaceship;
     public bool IsBarShowed = false, IsGameStarted = false;
+    public Coroutine startRecord;
     private int nitroLvl, maxFuellvl, StarterFuelLvl;
     private Vector3 StartPosition;
-    public Coroutine startRecord;
+    public Texture[] SpaceshipColors;
+    public GameObject[] SpaceshipPrefabs;
+    public GameObject Spaceship_PrefabsScrollerConten, Spaceship_ColorsScrollerConten;
+    
 
     void Start()
     {
@@ -56,7 +61,14 @@ public class UiHandler : MonoBehaviour
             PlayerPrefs.SetFloat("Record", 0);
         BottomBtns.transform.Find("Record").GetChild(0).GetComponent<TMP_Text>().text =
             PlayerPrefs.GetFloat("Record").ToString();
-
+        
+        if(!PlayerPrefs.HasKey("SpaceshipPrefabIndex"))
+            PlayerPrefs.SetInt("SpaceshipPrefabIndex",12);
+        SpaceshipPrefab(PlayerPrefs.GetInt("SpaceshipPrefabIndex"));
+        if(!PlayerPrefs.HasKey("SpaceshipColorIndex"))
+            PlayerPrefs.SetInt("SpaceshipColorIndex",12);
+        SpaceshipColer(PlayerPrefs.GetInt("SpaceshipColorIndex"));
+        
         #endregion
         
         StartGameBtn.onClick.AddListener(() =>
@@ -88,12 +100,18 @@ public class UiHandler : MonoBehaviour
                 
                 var content = MidleBtns.transform.Find("Bar").Find("Laboratory").Find("SpaceshipModels").Find("Scroll")
                     .Find("Conten");
-                content.localPosition = new Vector3(549, content.position.z, content.position.z);
+                content.localPosition = new Vector3(599, content.position.z, content.position.z);
                 content = MidleBtns.transform.Find("Bar").Find("Laboratory").Find("SpaceshipColer").Find("Scroll")
                     .Find("Conten");
                 content.localPosition = new Vector3(599, content.position.z, content.position.z);
                 
                 _mapCreator.SpaceShip.transform.Find("MainCamera").GetComponent<Animator>().SetTrigger("CameraOnBar");
+
+                Spaceship_PrefabsScrollerConten.transform.GetChild(PlayerPrefs.GetInt("SpaceshipPrefabIndex"))
+                    .GetComponent<Image>().color = new Color(0, 255, 255, 255);
+                Spaceship_ColorsScrollerConten.transform.GetChild(PlayerPrefs.GetInt("SpaceshipColorIndex"))
+                    .GetComponent<Image>().color = new Color(0, 255, 255, 255);
+                
             }
         });
 
@@ -114,6 +132,7 @@ public class UiHandler : MonoBehaviour
             int coin = int.Parse(BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text);
             if (coin >= StarterFuelLvl * 20)
             {
+                StartCoroutine(SpaceshipUpgradeEffect());
                 int RemindCoin = coin - StarterFuelLvl * 20;
                 BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
                     RemindCoin.ToString();
@@ -132,6 +151,7 @@ public class UiHandler : MonoBehaviour
             int coin = int.Parse(BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text);
             if (coin >= maxFuellvl * 20)
             {
+                StartCoroutine(SpaceshipUpgradeEffect());
                 int RemindCoin = coin - maxFuellvl * 20;
                 BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
                     RemindCoin.ToString();
@@ -149,6 +169,7 @@ public class UiHandler : MonoBehaviour
             int coin = int.Parse(BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text);
             if (coin >= nitroLvl * 50)
             {
+                StartCoroutine(SpaceshipUpgradeEffect());
                 int RemindCoin = coin - nitroLvl * 50;
                 BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
                     RemindCoin.ToString();
@@ -159,6 +180,17 @@ public class UiHandler : MonoBehaviour
             }
             else ShowWarning("Coin");
         });
+    }
+
+    IEnumerator SpaceshipUpgradeEffect()
+    {
+        Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(3, 3, 3, 1);
+        yield return new WaitForSeconds(.1f);
+        Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(1, 1, 1, 1);
+        yield return new WaitForSeconds(.1f);
+        Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(3, 3, 3, 1);
+        yield return new WaitForSeconds(.1f);
+        Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(1, 1, 1, 1);
     }
 
     public void CloseBar()
@@ -201,5 +233,78 @@ public class UiHandler : MonoBehaviour
                 record.ToString();
             yield return new WaitForSeconds(.1f);
         }
+    }
+
+    public void ChangePrefab(GameObject btn)
+    {
+        Spaceship_PrefabsScrollerConten.transform.GetChild(PlayerPrefs.GetInt("SpaceshipPrefabIndex"))
+            .GetComponent<Image>().color = new Color(207, 207, 207, 255);
+        btn.GetComponent<Image>().color = new Color(0, 255, 255, 255);
+        SpaceshipPrefab(int.Parse(btn.name));
+    }
+    
+    public void ChangeColer(GameObject btn)
+    {
+        Spaceship_ColorsScrollerConten.transform.GetChild(PlayerPrefs.GetInt("SpaceshipColorIndex"))
+            .GetComponent<Image>().color = new Color(207, 207, 207, 255);
+        btn.GetComponent<Image>().color = new Color(0, 255, 255, 255);
+        SpaceshipColer(int.Parse(btn.name));
+    }
+    
+    void SpaceshipColer(int index)
+    {
+        PlayerPrefs.SetInt("SpaceshipColorIndex",index);
+        switch (index)
+        {
+            case 0:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[0];
+                break;
+            case 1:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[1];
+                break;
+            case 2:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[2];
+                break;
+            case 3:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[3];
+                break;
+            case 4:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[4];
+                break;
+            case 5:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[5];
+                break;
+            case 6:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[6];
+                break;
+            case 7:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[7];
+                break;
+            case 8:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[8];
+                break;
+            case 9:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[9];
+                break;
+            case 10:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[10];
+                break;
+            case 11:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[11];
+                break;
+            case 12:
+                Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = SpaceshipColors[12];
+                break;
+        }
+    }
+
+    void SpaceshipPrefab(int index)
+    {
+        PlayerPrefs.SetInt("SpaceshipPrefabIndex", index);
+        GameObject tmp = Instantiate(SpaceshipPrefabs[index], new Vector3(0, .5f, 0), Quaternion.identity);
+        tmp.transform.SetParent(Spaceship.transform.GetChild(0).parent);
+        tmp.transform.SetSiblingIndex(0);
+        SpaceshipColer(PlayerPrefs.GetInt("SpaceshipColorIndex"));
+        Destroy(Spaceship.transform.GetChild(1).gameObject);
     }
 }

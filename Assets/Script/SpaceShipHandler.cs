@@ -3,7 +3,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.Networking;
 
 
 public class SpaceShipHandler : MonoBehaviour
@@ -18,6 +17,8 @@ public class SpaceShipHandler : MonoBehaviour
     private float Nitro;
     private bool IsNetroOn;
     private Coroutine _startSpaceShipContril, _spaceshipInfoHandler;
+    private bool IsFirstTouch = true;
+    private Vector2 FirstTouchPosition;
 
     public void SpaceShipControl()
     {
@@ -30,8 +31,8 @@ public class SpaceShipHandler : MonoBehaviour
         SpaceShipRotateSpeed = 5;
         IsNetroOn = false;
         Nitro = 0;
-        StarterFuel = PlayerPrefs.GetInt("starterFuel") * 2;
-        MaxFuel = PlayerPrefs.GetInt("maxFuel") * 2 + StarterFuel;
+        StarterFuel = PlayerPrefs.GetInt("starterFuel") * 2 + 15;
+        MaxFuel = PlayerPrefs.GetInt("maxFuel") + StarterFuel;
         LeftMaxFuel.fillAmount = (float) Math.Round((100f * StarterFuel / MaxFuel) / 100f,1);
         RightMaxFuel.fillAmount = (float) Math.Round((100f * StarterFuel / MaxFuel) / 100f,1);
         top_StarterFuelTxt.text = StarterFuel.ToString();
@@ -61,6 +62,32 @@ public class SpaceShipHandler : MonoBehaviour
                     activeNitro();
                 }
             }
+            else if (Application.platform == RuntimePlatform.Android)
+            {
+                if (Input.touchCount == 1 && IsFirstTouch)
+                {
+                    FirstTouchPosition = Input.GetTouch(0).position;
+                    IsFirstTouch = false;
+                    if(Input.GetTouch(0).position.y > FirstTouchPosition.y)
+                        Spaceship.transform.Rotate(Vector3.forward * SpaceShipRotateSpeed);
+                    else if(Input.GetTouch(0).position.y < FirstTouchPosition.y)
+                        Spaceship.transform.Rotate(Vector3.back * SpaceShipRotateSpeed);
+                }
+                else if (Input.touchCount == 1 && !IsFirstTouch)
+                {
+                    if(Input.GetTouch(0).position.y > FirstTouchPosition.y)
+                        Spaceship.transform.Rotate(Vector3.forward * SpaceShipRotateSpeed);
+                    else if(Input.GetTouch(0).position.y < FirstTouchPosition.y)
+                        Spaceship.transform.Rotate(Vector3.back * SpaceShipRotateSpeed);
+                }
+                else if (Input.touchCount == 0 && !IsFirstTouch)
+                {
+                    IsFirstTouch = true;
+                }
+                
+                /*if(Input.GetTouch(0).tapCount==2)
+                    activeNitro();*/
+            }
             yield return new WaitForFixedUpdate();
         }
     }
@@ -72,7 +99,7 @@ public class SpaceShipHandler : MonoBehaviour
         {
             yield return new WaitForSeconds(1);
             SpaceShipSpeed += .01f;
-            if (StarterFuel - 1 > 0)
+            if (StarterFuel - 1 >= 0)
             {
                 StarterFuel--;
                 top_StarterFuelTxt.text = StarterFuel.ToString();
@@ -108,6 +135,7 @@ public class SpaceShipHandler : MonoBehaviour
     
     IEnumerator ActiveNitro()
     {
+        Spaceship.transform.Find("Stars").gameObject.SetActive(true);
         SpaceShipSpeed += 4;
         IsNetroOn = true;
         while (Nitro>0)
@@ -120,6 +148,8 @@ public class SpaceShipHandler : MonoBehaviour
 
         Nitro = 0;
         top_NitroTxt.text = "0";
+        
+        Spaceship.transform.Find("Stars").gameObject.SetActive(false);
         
         SpaceShipSpeed -= 4;
         IsNetroOn = false;
@@ -136,6 +166,11 @@ public class SpaceShipHandler : MonoBehaviour
                 StarterFuel += 5;
                 top_StarterFuelTxt.text = StarterFuel.ToString();
             }
+            else
+            {
+                StarterFuel = MaxFuel;
+                top_StarterFuelTxt.text = StarterFuel.ToString();
+            }
             collision.gameObject.SetActive(false);
             GameObject effect = Spaceship.transform.Find("Charge_Fuel").gameObject;
             StartCoroutine(OnOffEffect(effect));
@@ -148,6 +183,18 @@ public class SpaceShipHandler : MonoBehaviour
             GameObject effect = Spaceship.transform.Find("Charge_Coin").gameObject;
             StartCoroutine(OnOffEffect(effect));
         }
+    }
+
+    void GameFinished()
+    {
+        //animation enfejar
+        Spaceship.transform.GetChild(0).gameObject.SetActive(false);
+        GameObject effect = Spaceship.transform.Find("Exposion").gameObject;
+        StartCoroutine(OnOffEffect(effect));
+        StopCoroutine(_spaceshipInfoHandler);
+        StopCoroutine(_startSpaceShipContril);
+        StopCoroutine(_uiHandler.startRecord);
+        StartCoroutine(gameFinished());
     }
 
     IEnumerator OnOffEffect(GameObject effect)
@@ -180,21 +227,12 @@ public class SpaceShipHandler : MonoBehaviour
                 break;
         }
     }
-
-    void GameFinished()
-    {
-        //animation enfejar
-        Spaceship.transform.GetChild(0).gameObject.SetActive(false);
-        GameObject effect = Spaceship.transform.Find("Exposion").gameObject;
-        StartCoroutine(OnOffEffect(effect));
-        StopCoroutine(_spaceshipInfoHandler);
-        StopCoroutine(_startSpaceShipContril);
-        StopCoroutine(_uiHandler.startRecord);
-        StartCoroutine(gameFinished());
-    }
-
+    
     IEnumerator gameFinished()
     {
+        //larzes dorbin
+        Spaceship.transform.Find("MainCamera").GetComponent<Animator>().SetTrigger("CameraGameOver");
+        
         yield return new WaitForSeconds(1);
         _uiHandler.TopBtns.GetComponent<Animator>().SetTrigger("HideTopBtns");
         
@@ -212,9 +250,9 @@ public class SpaceShipHandler : MonoBehaviour
         }
         else yield return new WaitForSeconds(1);
         
+        Spaceship.transform.Find("MainCamera").GetComponent<Animator>().SetTrigger("MenuCamera");
         _uiHandler.MidleBtns.GetComponent<Animator>().SetTrigger("BackToMenu");
         _uiHandler.BottomBtns.GetComponent<Animator>().SetTrigger("ShowBottomBtns");
-        Spaceship.transform.Find("MainCamera").GetComponent<Animator>().SetTrigger("MenuCamera");
         Spaceship.transform.GetChild(0).gameObject.SetActive(true);
         Spaceship.transform.position = new Vector3(0, 0, 0);
         for(int i=0;i<_mapCreator.MapsPart.Count;i++)
