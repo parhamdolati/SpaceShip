@@ -9,26 +9,30 @@ public class SpaceShipHandler : MonoBehaviour
 {
     [SerializeField] private MapCreator _mapCreator;
     [SerializeField] private UiHandler _uiHandler;
-    public GameObject Spaceship, Stars, Result;
+    [SerializeField] private AudioHandler _audioHandler;
+    public GameObject Spaceship, Stars, Result, NitroAbilityBtn;
     public TMP_Text top_StarterFuelTxt, top_NitroTxt, top_CoinTxt;
     public Image LeftMaxFuel, RightMaxFuel;
-    private float SpaceShipSpeed, SpaceShipRotateSpeed;
+    private float SpaceShipSpeed;
+    public float SpaceShipRotateSpeed;
     private int MaxFuel, StarterFuel ,Coin;
     private float Nitro;
     private bool IsNetroOn;
-    private Coroutine _startSpaceShipContril, _spaceshipInfoHandler;
+    private Coroutine _startSpaceShipControl, _spaceshipInfoHandler;
     private bool IsFirstTouch = true;
     private Vector2 FirstTouchPosition;
 
     public void SpaceShipControl()
     {
-        _startSpaceShipContril = StartCoroutine(StartSpaceShipControl());
+        _audioHandler.Music();
+        _startSpaceShipControl = StartCoroutine(StartSpaceShipControl());
     }
     
     IEnumerator StartSpaceShipControl()
     {
         SpaceShipSpeed = 3;
-        SpaceShipRotateSpeed = 5;
+        SpaceShipRotateSpeed = PlayerPrefs.GetFloat("RotateSpeed");
+        Debug.Log(SpaceShipRotateSpeed);
         IsNetroOn = false;
         Nitro = 0;
         StarterFuel = PlayerPrefs.GetInt("starterFuel") * 2 + 15;
@@ -130,7 +134,10 @@ public class SpaceShipHandler : MonoBehaviour
     public void activeNitro()
     {
         if (!IsNetroOn)
+        {
             StartCoroutine(ActiveNitro());
+            NitroAbilityBtn.SetActive(false);
+        }
     }
     
     IEnumerator ActiveNitro()
@@ -138,7 +145,7 @@ public class SpaceShipHandler : MonoBehaviour
         Spaceship.transform.Find("Stars").gameObject.SetActive(true);
         SpaceShipSpeed += 4;
         IsNetroOn = true;
-        while (Nitro>0)
+        while (Nitro>0 && IsNetroOn)
         {
             Nitro -= PlayerPrefs.GetInt("nitro") / 100f;
             Nitro = (float) Math.Round(Nitro, 2);
@@ -153,6 +160,10 @@ public class SpaceShipHandler : MonoBehaviour
         
         SpaceShipSpeed -= 4;
         IsNetroOn = false;
+        if (PlayerPrefs.GetInt("IsRightHand") == 1)
+            NitroAbilityBtn.transform.localPosition = new Vector2(800,150);
+        else NitroAbilityBtn.transform.localPosition = new Vector2(-800,0);
+        NitroAbilityBtn.SetActive(true);
     }
     
     private void OnCollisionEnter(Collision collision)
@@ -187,12 +198,15 @@ public class SpaceShipHandler : MonoBehaviour
 
     void GameFinished()
     {
-        //animation enfejar
+        NitroAbilityBtn.SetActive(false);
+        IsNetroOn = false;
+        Stars.SetActive(false);
+        //animation enfejar va larzesh dorbin
         Spaceship.transform.GetChild(0).gameObject.SetActive(false);
-        GameObject effect = Spaceship.transform.Find("Exposion").gameObject;
+        GameObject effect = Spaceship.transform.Find("Explosion").gameObject;
         StartCoroutine(OnOffEffect(effect));
         StopCoroutine(_spaceshipInfoHandler);
-        StopCoroutine(_startSpaceShipContril);
+        StopCoroutine(_startSpaceShipControl);
         StopCoroutine(_uiHandler.startRecord);
         StartCoroutine(gameFinished());
     }
@@ -202,6 +216,7 @@ public class SpaceShipHandler : MonoBehaviour
         switch (effect.name)
         {
             case "Charge_Fuel":
+                _audioHandler.Efx("GetChest");
                 if (!effect.activeInHierarchy)
                 {
                     effect.SetActive(true);
@@ -210,6 +225,7 @@ public class SpaceShipHandler : MonoBehaviour
                 }
                 break;
             case "Charge_Coin":
+                _audioHandler.Efx("GetChest");
                 if (!effect.activeInHierarchy)
                 {
                     effect.SetActive(true);
@@ -217,7 +233,7 @@ public class SpaceShipHandler : MonoBehaviour
                     effect.SetActive(false);
                 }
                 break;
-            case "Exposion":
+            case "Explosion":
                 if (!effect.activeInHierarchy)
                 {
                     effect.SetActive(true);
@@ -230,12 +246,16 @@ public class SpaceShipHandler : MonoBehaviour
     
     IEnumerator gameFinished()
     {
-        //larzes dorbin
+        _audioHandler.MusicSource.Stop();
+        StopCoroutine(_audioHandler._MusicLoop);
+        _audioHandler.Efx("Explosion");
+        
+        //larzes dorbin va effext
         Spaceship.transform.Find("MainCamera").GetComponent<Animator>().SetTrigger("CameraGameOver");
         
         yield return new WaitForSeconds(1);
         _uiHandler.TopBtns.GetComponent<Animator>().SetTrigger("HideTopBtns");
-        
+
         //namayesh natije
         float record = float.Parse(_uiHandler.TopBtns.transform.Find("RecordTxt").GetComponent<TMP_Text>().text);
         if (record > PlayerPrefs.GetFloat("Record"))
@@ -267,5 +287,7 @@ public class SpaceShipHandler : MonoBehaviour
         
         _uiHandler.TopBtns.transform.Find("RecordTxt").GetComponent<TMP_Text>().text = "0";
         _uiHandler.TopBtns.transform.Find("CoinTxt").GetComponent<TMP_Text>().text = "0";
+        Stars.SetActive(true);
+        _audioHandler.Efx("GoLobby");
     }
 }

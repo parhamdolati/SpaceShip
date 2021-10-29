@@ -7,7 +7,8 @@ using UnityEngine.UI;
 
 public class UiHandler : MonoBehaviour
 {
-
+    [SerializeField] private SpaceShipHandler _spaceShipHandler;
+    [SerializeField] private AudioHandler _audioHandler;
     [SerializeField] private MapCreator _mapCreator;
     public Button StartGameBtn, LaboratoryBtn, SettingsBtn, MaxFuelBtns, StarterFuelBtn, NitroBtn;
     public GameObject TopBtns, MidleBtns, BottomBtns, CloseBarPanel;
@@ -19,7 +20,8 @@ public class UiHandler : MonoBehaviour
     public Texture[] SpaceshipColors;
     public GameObject[] SpaceshipPrefabs;
     public GameObject Spaceship_PrefabsScrollerConten, Spaceship_ColorsScrollerConten;
-    
+    public Button Music, Efx, LefthandTogle;
+    public Slider RotateSpeed;
 
     void Start()
     {
@@ -68,7 +70,61 @@ public class UiHandler : MonoBehaviour
         if(!PlayerPrefs.HasKey("SpaceshipColorIndex"))
             PlayerPrefs.SetInt("SpaceshipColorIndex",12);
         SpaceshipColer(PlayerPrefs.GetInt("SpaceshipColorIndex"));
+
+        if(!PlayerPrefs.HasKey("Music"))
+            PlayerPrefs.SetInt("Music",1);
+        else
+        {
+            if (PlayerPrefs.GetInt("Music") == 0)
+            {
+                Music.GetComponent<Image>().color = new Color32(255, 0, 8, 255);
+                Music.transform.Find("OnOff").GetComponent<Text>().text = "Off";
+            }
+            else
+            {
+                Music.GetComponent<Image>().color = new Color32(12, 255, 0, 255);
+                Music.transform.Find("OnOff").GetComponent<Text>().text = "On";
+            }
+        }
         
+        if(!PlayerPrefs.HasKey("Efx")) 
+            PlayerPrefs.SetInt("Efx",1);
+        else
+        {
+            if (PlayerPrefs.GetInt("Efx") == 0)
+            {
+                Efx.GetComponent<Image>().color = new Color32(255, 0, 8, 255);
+                Efx.transform.Find("OnOff").GetComponent<Text>().text = "Off";
+            }
+            else
+            {
+                Efx.GetComponent<Image>().color = new Color32(12, 255, 0, 255);
+                Efx.transform.Find("OnOff").GetComponent<Text>().text = "On";
+            }
+        }
+        
+        if(!PlayerPrefs.HasKey("IsRightHand"))
+            PlayerPrefs.SetInt("IsRightHand",1);//1 yani rast dast
+        else
+        {
+            if (PlayerPrefs.GetInt("IsRightHand") == 0)
+            {
+                LefthandTogle.transform.Find("Image").localPosition = new Vector3(-37, 0, 0);
+                LefthandTogle.transform.Find("Image").GetComponent<Image>().color = new Color32(12, 255, 0, 255);
+            }
+            else
+            {
+                LefthandTogle.transform.Find("Image").localPosition = new Vector3(37, 0, 0);
+                LefthandTogle.transform.Find("Image").GetComponent<Image>().color = new Color32(255, 8, 0, 255);
+            }
+        }
+        
+        if(!PlayerPrefs.HasKey("RotateSpeed"))
+            PlayerPrefs.SetFloat("RotateSpeed",5);
+        else
+        {
+            RotateSpeed.value = PlayerPrefs.GetFloat("RotateSpeed")/10;
+        }
         #endregion
         
         StartGameBtn.onClick.AddListener(() =>
@@ -132,6 +188,7 @@ public class UiHandler : MonoBehaviour
             int coin = int.Parse(BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text);
             if (coin >= StarterFuelLvl * 20)
             {
+                _audioHandler.Efx("Upgrade");
                 StartCoroutine(SpaceshipUpgradeEffect());
                 int RemindCoin = coin - StarterFuelLvl * 20;
                 BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
@@ -151,6 +208,7 @@ public class UiHandler : MonoBehaviour
             int coin = int.Parse(BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text);
             if (coin >= maxFuellvl * 20)
             {
+                _audioHandler.Efx("Upgrade");
                 StartCoroutine(SpaceshipUpgradeEffect());
                 int RemindCoin = coin - maxFuellvl * 20;
                 BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
@@ -169,6 +227,7 @@ public class UiHandler : MonoBehaviour
             int coin = int.Parse(BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text);
             if (coin >= nitroLvl * 50)
             {
+                _audioHandler.Efx("Upgrade");
                 StartCoroutine(SpaceshipUpgradeEffect());
                 int RemindCoin = coin - nitroLvl * 50;
                 BottomBtns.transform.Find("Coin").GetChild(0).GetComponent<TMP_Text>().text =
@@ -180,8 +239,56 @@ public class UiHandler : MonoBehaviour
             }
             else ShowWarning("Coin");
         });
+        
+        Music.onClick.AddListener(() =>
+        {
+            if (PlayerPrefs.GetInt("Music") == 1)
+            {
+                PlayerPrefs.SetInt("Music", 0);
+                Music.GetComponent<Image>().color = new Color32(255, 0, 8, 255);
+                Music.transform.Find("OnOff").GetComponent<Text>().text = "Off";
+            }
+            else
+            {
+                PlayerPrefs.SetInt("Music", 1);
+                Music.GetComponent<Image>().color = new Color32(12, 255, 0, 255);
+                Music.transform.Find("OnOff").GetComponent<Text>().text = "On";
+            }
+        });
+        
+        Efx.onClick.AddListener(() =>
+        {
+            if (PlayerPrefs.GetInt("Efx") == 1)
+            {
+                PlayerPrefs.SetInt("Efx", 0);
+                Efx.GetComponent<Image>().color = new Color32(255, 0, 8, 255);
+                Efx.transform.Find("OnOff").GetComponent<Text>().text = "Off";
+            }
+            else
+            {
+                PlayerPrefs.SetInt("Efx", 1);
+                Efx.GetComponent<Image>().color = new Color32(12, 255, 0, 255);
+                Efx.transform.Find("OnOff").GetComponent<Text>().text = "On";
+            }
+        });
+        
+        LefthandTogle.onClick.AddListener(() =>
+        {
+            if (PlayerPrefs.GetInt("IsRightHand") == 1)
+            {
+                PlayerPrefs.SetInt("IsRightHand",0);
+                LefthandTogle.transform.Find("Image").localPosition = new Vector3(-37, 0, 0);
+                LefthandTogle.transform.Find("Image").GetComponent<Image>().color = new Color32(12, 255, 0, 255);
+            }
+            else
+            {
+                PlayerPrefs.SetInt("IsRightHand",1);
+                LefthandTogle.transform.Find("Image").localPosition = new Vector3(37, 0, 0);
+                LefthandTogle.transform.Find("Image").GetComponent<Image>().color = new Color32(255, 8, 0, 255);
+            }
+        });
     }
-
+    
     IEnumerator SpaceshipUpgradeEffect()
     {
         Spaceship.transform.GetChild(0).GetComponent<Renderer>().material.color = new Color(3, 3, 3, 1);
@@ -225,6 +332,12 @@ public class UiHandler : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
         IsGameStarted = false;
+        
+        if (PlayerPrefs.GetInt("IsRightHand") == 1)
+            _spaceShipHandler.NitroAbilityBtn.transform.localPosition = new Vector2(800,150);
+        else _spaceShipHandler.NitroAbilityBtn.transform.localPosition = new Vector2(-800,0);
+        _spaceShipHandler.NitroAbilityBtn.SetActive(true);
+        
         while (true)
         {
             record = (_mapCreator.SpaceShip.transform.position.z - 12);
@@ -237,6 +350,7 @@ public class UiHandler : MonoBehaviour
 
     public void ChangePrefab(GameObject btn)
     {
+        _audioHandler.Efx("ChangeSkin");
         Spaceship_PrefabsScrollerConten.transform.GetChild(PlayerPrefs.GetInt("SpaceshipPrefabIndex"))
             .GetComponent<Image>().color = new Color(207, 207, 207, 255);
         btn.GetComponent<Image>().color = new Color(0, 255, 255, 255);
@@ -245,6 +359,7 @@ public class UiHandler : MonoBehaviour
     
     public void ChangeColer(GameObject btn)
     {
+        _audioHandler.Efx("ChangeSkin");
         Spaceship_ColorsScrollerConten.transform.GetChild(PlayerPrefs.GetInt("SpaceshipColorIndex"))
             .GetComponent<Image>().color = new Color(207, 207, 207, 255);
         btn.GetComponent<Image>().color = new Color(0, 255, 255, 255);
@@ -306,5 +421,16 @@ public class UiHandler : MonoBehaviour
         tmp.transform.SetSiblingIndex(0);
         SpaceshipColer(PlayerPrefs.GetInt("SpaceshipColorIndex"));
         Destroy(Spaceship.transform.GetChild(1).gameObject);
+    }
+
+    public void SpaceshipRotateSpeed(Slider slider)
+    {
+        float value;
+        if (slider.value >= .1f)
+            value = slider.value * 10;
+        else
+            value = 1;
+        _spaceShipHandler.SpaceShipRotateSpeed = value;
+        PlayerPrefs.SetFloat("RotateSpeed", value);
     }
 }

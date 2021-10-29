@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = System.Random;
 
 
@@ -9,30 +10,30 @@ using Random = System.Random;
 public class AudioHandler : MonoBehaviour
 {
     public AudioSource MusicSource, EfxSource;
-    public AudioClip[] MusicClip, EfxClip;
-    private Random _random = new Random();
-    private int MusicIndex;
+    public AudioClip MusicClip, ExplosionClip, ChangeSkinClip, ClickClip, goLobby ;
+    public AudioClip UpgradeClip, GetChestClip;
+    public Coroutine _MusicLoop;
+
     private void Start()
     {
-        MusicIndex = 0;
-        if(!PlayerPrefs.HasKey("Music"))
-            PlayerPrefs.SetInt("Music",1);
-        if(PlayerPrefs.HasKey("Efx")) 
-            PlayerPrefs.SetInt("Efx",1);
-        Music();
+        Efx("GoLobby");
     }
 
     public void Music()
     {
         if (PlayerPrefs.GetInt("Music") == 1)
         {
-            MusicSource.clip = MusicClip[MusicIndex];
-            MusicIndex++;
-            if (MusicIndex == MusicClip.Length)
-                MusicIndex = 0;
+            MusicSource.clip = MusicClip;
             MusicSource.Play();
+            _MusicLoop = StartCoroutine(MusicLoop());
         }
-        else MusicSource.Stop();
+    }
+
+    IEnumerator MusicLoop()
+    {
+        yield return new WaitForSeconds(MusicClip.length);
+        yield return new WaitForSeconds(10);
+        Music();
     }
 
     public void Efx(string effect)
@@ -41,22 +42,28 @@ public class AudioHandler : MonoBehaviour
         {
             switch (effect)
             {
-                case "Exposion":
+                case "Explosion":
+                    EfxSource.clip = ExplosionClip;
                     EfxSource.Play();
                     break;
-                case "Charge_Coin":
-                    EfxSource.Play();
-                    break;
-                case "Charge_Fuel":
+                case "Upgrade":
+                    EfxSource.clip = UpgradeClip;
                     EfxSource.Play();
                     break;
                 case "Click":
+                    EfxSource.clip = ClickClip;
                     EfxSource.Play();
                     break;
-                case "NewRecord":
+                case "GoLobby":
+                    EfxSource.clip = goLobby;
                     EfxSource.Play();
                     break;
-                case "Viewlaboratory":
+                case "ChangeSkin":
+                    EfxSource.clip = ChangeSkinClip;
+                    EfxSource.Play();
+                    break;
+                case "GetChest":
+                    EfxSource.clip = GetChestClip;
                     EfxSource.Play();
                     break;
             }
